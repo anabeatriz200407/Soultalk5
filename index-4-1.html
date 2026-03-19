@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>SoulTalk</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0d0f;--s1:#181820;--s2:#1e1e28;--s3:#252530;
+  --bd:#2c2c3a;--ac:#6c63ff;--ac2:#9d97ff;--glow:rgba(108,99,255,.4);
+  --tx:#f0f0f5;--txm:#7a7a8e;--txd:#46465a;--red:#ff4f6d;
+  --green:#3ddc84;--r:14px;--fn:'Nunito',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--fn);overflow:hidden;}
+.app{width:100%;max-width:430px;height:100svh;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg);overflow:hidden;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;transform:translateY(8px);overflow:hidden;}
+.screen.on{opacity:1;pointer-events:all;transform:translateY(0);}
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scr::-webkit-scrollbar{width:3px;}
+.scr::-webkit-scrollbar-thumb{background:var(--bd);}
+.exp-title{padding:22px 20px 8px;font-size:22px;font-weight:900;letter-spacing:-.01em;flex-shrink:0;display:flex;align-items:center;gap:10px;}
+.exp-title span{color:var(--ac);}
+.cats{display:flex;gap:6px;padding:4px 14px 14px;overflow-x:auto;flex-shrink:0;}
+.cats::-webkit-scrollbar{display:none;}
+.cat{white-space:nowrap;padding:7px 16px;border-radius:50px;border:1px solid var(--bd);background:none;color:var(--txm);font-family:var(--fn);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .17s;flex-shrink:0;}
+.cat.on,.cat:hover{background:var(--ac);border-color:var(--ac);color:#fff;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 10px 16px;}
+.card{background:var(--s1);border-radius:var(--r);overflow:hidden;cursor:pointer;border:1px solid var(--bd);transition:transform .18s,box-shadow .18s;animation:fu .35s ease both;}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.6);}
+@keyframes fu{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.card:nth-child(1){animation-delay:.04s;}.card:nth-child(2){animation-delay:.09s;}
+.card:nth-child(3){animation-delay:.14s;}.card:nth-child(4){animation-delay:.19s;}
+.card-art{width:100%;aspect-ratio:3/4;display:block;position:relative;overflow:hidden;flex-shrink:0;background:var(--s2);}
+.card-art img{width:100%;height:100%;object-fit:cover;}
+.card-art svg{width:100%;height:100%;}
+.card-cnt{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.62);backdrop-filter:blur(4px);border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:700;color:#fff;display:flex;align-items:center;gap:3px;}
+.card-body{padding:9px 10px 11px;}
+.card-name{font-size:13.5px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-desc{font-size:11px;color:var(--txm);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px;}
+.card-tags{display:flex;flex-wrap:wrap;gap:3px;}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:50px;background:var(--s2);color:var(--ac2);border:1px solid rgba(108,99,255,.2);}
+.ch-hdr{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;}
+.ch-bk{background:none;border:none;color:var(--txm);font-size:22px;cursor:pointer;line-height:1;transition:color .17s;}
+.ch-bk:hover{color:var(--tx);}
+.ch-av{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--ac);background:var(--s2);}
+.ch-av img,.ch-av svg{width:100%;height:100%;object-fit:cover;}
+.ch-info h3{font-size:14.5px;font-weight:800;}
+.ch-info p{font-size:11px;color:var(--ac2);}
+.ch-msgs{flex:1;overflow-y:auto;padding:16px 13px;display:flex;flex-direction:column;gap:12px;}
+.ch-msgs::-webkit-scrollbar{width:3px;}
+.ch-msgs::-webkit-scrollbar-thumb{background:var(--bd);}
+.bub{max-width:80%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.55;animation:fu .28s ease both;}
+.bub.bot{background:var(--s2);color:var(--tx);align-self:flex-start;border-bottom-left-radius:4px;}
+.bub.user{background:var(--ac);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.typ{align-self:flex-start;background:var(--s2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;display:flex;gap:5px;align-items:center;animation:fu .25s ease both;}
+.typ span{width:7px;height:7px;background:var(--txm);border-radius:50%;animation:db 1.1s ease-in-out infinite;}
+.typ span:nth-child(2){animation-delay:.18s;}.typ span:nth-child(3){animation-delay:.36s;}
+@keyframes db{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-7px);}}
+.chips{align-self:flex-start;display:flex;flex-wrap:wrap;gap:6px;animation:fu .3s .07s ease both;opacity:0;animation-fill-mode:forwards;}
+.chip{padding:7px 13px;border:1.5px solid var(--bd);border-radius:50px;background:none;color:var(--txm);font-family:var(--fn);font-size:12px;font-weight:700;cursor:pointer;transition:all .17s;}
+.chip:hover{border-color:var(--ac);color:var(--ac2);background:rgba(108,99,255,.1);}
+.ch-foot{padding:11px 13px;background:var(--s1);border-top:1px solid var(--bd);display:flex;gap:9px;align-items:center;flex-shrink:0;}
+#ci{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:50px;padding:10px 16px;color:var(--tx);font-family:var(--fn);font-size:14px;outline:none;transition:border-color .2s;}
+#ci:focus{border-color:var(--ac);}
+#ci::placeholder{color:var(--txd);}
+#cs{width:40px;height:40px;flex-shrink:0;border:none;border-radius:50%;background:var(--ac);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .17s;box-shadow:0 0 14px var(--glow);}
+#cs:hover{transform:scale(1.08);}
+#cs:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.pg-hdr{display:flex;align-items:center;padding:16px 18px 12px;font-size:16px;font-weight:800;letter-spacing:.01em;flex-shrink:0;gap:6px;border-bottom:1px solid var(--bd);}
+.pg-bk{background:none;border:none;color:var(--txm);font-size:22px;cursor:pointer;line-height:1;}
+.sec{padding:0 18px 4px;}
+.fl{font-size:13px;font-weight:700;color:var(--tx);margin-top:20px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.fl small{color:var(--txd);font-weight:400;font-size:11px;}
+.fl .badge{font-size:9px;background:var(--ac);color:#fff;padding:2px 6px;border-radius:50px;font-weight:800;}
+.fi{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:13px 16px;color:var(--tx);font-family:var(--fn);font-size:14px;outline:none;transition:border-color .2s;}
+input.fi:focus,textarea.fi:focus{border-color:var(--ac);}
+input.fi::placeholder,textarea.fi::placeholder{color:var(--txd);}
+textarea.fi{resize:none;line-height:1.55;}
+.fhint{font-size:11.5px;color:var(--txd);display:flex;align-items:flex-start;gap:5px;margin-top:6px;line-height:1.5;}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:8px;}
+.btn-grid.col2{grid-template-columns:1fr 1fr;}
+.btn-grid.col4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.tog{padding:10px 4px;border:1.5px solid var(--bd);border-radius:var(--r);background:none;color:var(--txm);font-family:var(--fn);font-size:11.5px;font-weight:700;cursor:pointer;transition:all .18s;text-align:center;line-height:1.3;}
+.tog.on{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 0 10px var(--glow);}
+.tog:hover:not(.on){border-color:var(--ac2);color:var(--ac2);}
+.action-btn{margin:22px 18px 4px;width:calc(100% - 36px);padding:15px;border:none;border-radius:50px;background:var(--ac);color:#fff;font-family:var(--fn);font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px var(--glow);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.action-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px var(--glow);}
+.sdiv{margin:22px 18px 0;padding-bottom:10px;border-bottom:1px solid var(--bd);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txd);}
+.nav{display:flex;background:var(--s1);border-top:1px solid var(--bd);padding:10px 0 calc(10px + env(safe-area-inset-bottom));flex-shrink:0;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--txm);font-family:var(--fn);font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:color .17s;position:relative;}
+.nb.on{color:var(--ac);}
+.ni{font-size:20px;line-height:1;}
+.nb .dot{position:absolute;top:0;right:calc(50% - 18px);width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--s1);}
+.nb-plus{width:48px;height:48px;margin-top:-8px;border-radius:50%;background:var(--ac);box-shadow:0 0 18px var(--glow);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0;border:none;cursor:pointer;}
+.char-foto-box{display:flex;flex-direction:column;align-items:center;padding:18px 18px 0;gap:10px;}
+.char-foto-wrap{position:relative;cursor:pointer;width:110px;height:110px;}
+.char-foto-inner{width:110px;height:110px;border-radius:16px;background:var(--s2);border:2px dashed var(--bd);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border-color .2s;}
+.char-foto-inner:hover{border-color:var(--ac);}
+.char-foto-inner img{width:100%;height:100%;object-fit:cover;border-radius:14px;}
+.char-foto-plus{position:absolute;bottom:-6px;right:-6px;width:28px;height:28px;border-radius:50%;background:var(--ac);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;z-index:999;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal-box{background:var(--s1);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 36px;border-top:1px solid var(--bd);animation:slideUp .22s ease;}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--txm);margin-bottom:22px;line-height:1.5;}
+.modal-btns{display:flex;flex-direction:column;gap:10px;}
+.modal-btn-del{padding:14px;border:none;border-radius:50px;background:var(--red);color:#fff;font-family:var(--fn);font-size:15px;font-weight:800;cursor:pointer;}
+.modal-btn-cancel{padding:14px;border:1.5px solid var(--bd);border-radius:50px;background:none;color:var(--txm);font-family:var(--fn);font-size:15px;font-weight:700;cursor:pointer;}
+.prompt-bar{display:flex;gap:8px;padding:8px 13px;background:var(--s1);border-top:1px solid var(--bd);overflow-x:auto;flex-shrink:0;}
+.prompt-bar::-webkit-scrollbar{display:none;}
+.prompt-chip{white-space:nowrap;padding:7px 14px;border:1.5px solid var(--bd);border-radius:50px;background:var(--s2);color:var(--txm);font-family:var(--fn);font-size:12px;font-weight:700;cursor:pointer;transition:all .17s;flex-shrink:0;}
+.prompt-chip:hover{border-color:var(--ac);color:var(--ac2);background:rgba(108,99,255,.12);}
+.foto-box{display:flex;flex-direction:column;align-items:center;padding:20px 0 6px;gap:10px;}
+.foto-circle{position:relative;cursor:pointer;}
+.foto-ring{border-radius:50%;background:var(--s2);border:2.5px solid var(--ac);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.foto-ring img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.foto-pen{position:absolute;bottom:2px;right:2px;background:var(--ac);border:2px solid var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.foto-lbl{font-size:12.5px;color:var(--ac2);font-weight:700;cursor:pointer;}
+.cfg-section{padding:18px 18px 0;}
+.cfg-title{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txd);margin-bottom:12px;}
+.theme-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:6px;}
+.theme-dot{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .18s;position:relative;}
+.theme-dot.on{border-color:var(--ac);transform:scale(1.15);box-shadow:0 0 10px var(--glow);}
+.theme-dot.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;}
+body.theme-midnight{--bg:#0d0d0f;--s1:#181820;--s2:#1e1e28;--bd:#2c2c3a;--tx:#f0f0f5;--txm:#7a7a8e;--txd:#46465a;}
+body.theme-abyss{--bg:#060610;--s1:#0e0e1c;--s2:#14142a;--bd:#22223a;--tx:#e8e8ff;--txm:#6868a0;--txd:#38385a;}
+body.theme-obsidian{--bg:#0a0a0a;--s1:#141414;--s2:#1c1c1c;--bd:#282828;--tx:#f5f5f5;--txm:#707070;--txd:#404040;}
+body.theme-forest{--bg:#060e08;--s1:#0d1a0f;--s2:#132015;--bd:#1e3020;--tx:#e8f5e8;--txm:#5a8060;--txd:#304838;}
+body.theme-crimson{--bg:#0f0608;--s1:#1c0c10;--s2:#221016;--bd:#331520;--tx:#f5e8ea;--txm:#8a5060;--txd:#4a2830;}
+body.theme-void{--bg:#04040a;--s1:#0a0a14;--s2:#10101e;--bd:#1a1a2e;--tx:#dcdcff;--txm:#5050a0;--txd:#282850;}
+body.theme-slate{--bg:#080c10;--s1:#101620;--s2:#181e2a;--bd:#222c3a;--tx:#e8eef5;--txm:#5a6a80;--txd:#303c4a;}
+body.theme-ember{--bg:#0e0805;--s1:#1a1008;--s2:#20160a;--bd:#302010;--tx:#f5ece0;--txm:#806050;--txd:#483020;}
+body.theme-grape{--bg:#0a0610;--s1:#140c1e;--s2:#1a1228;--bd:#281a3c;--tx:#f0e8ff;--txm:#7858a0;--txd:#3c2860;}
+body.theme-ocean{--bg:#040c10;--s1:#0a1820;--s2:#0e2030;--bd:#142840;--tx:#e0f0ff;--txm:#406080;--txd:#204050;}
+body.theme-iron{--bg:#0c0c0c;--s1:#161618;--s2:#1e1e22;--bd:#2a2a30;--tx:#e8e8ec;--txm:#686870;--txd:#383840;}
+body.theme-onyx{--bg:#050508;--s1:#0e0e12;--s2:#14141a;--bd:#202028;--tx:#ebebf5;--txm:#58586a;--txd:#2e2e3a;}
+body.theme-ivory{--bg:#f8f5f0;--s1:#ede9e2;--s2:#e2ddd5;--bd:#ccc8be;--tx:#2a2820;--txm:#8a8070;--txd:#b0a898;--ac:#6c63ff;}
+body.theme-rose{--bg:#fff5f6;--s1:#fde8ea;--s2:#fad8dc;--bd:#e8c0c8;--tx:#2e1820;--txm:#a07080;--txd:#c8a0a8;--ac:#e05080;}
+body.theme-mint{--bg:#f2faf5;--s1:#e0f2e8;--s2:#d0ead8;--bd:#b0d8c0;--tx:#182a20;--txm:#508060;--txd:#90c0a0;--ac:#2a9d5c;}
+body.theme-sky{--bg:#f0f8ff;--s1:#e0effa;--s2:#cce5f5;--bd:#a8d0ea;--tx:#101e2e;--txm:#406888;--txd:#80aac8;--ac:#1a6fa0;}
+body.theme-cream{--bg:#fdf9f2;--s1:#f5efe0;--s2:#ece4cc;--bd:#d8ccaa;--tx:#2a2410;--txm:#8a7a50;--txd:#c0b080;--ac:#9a7a30;}
+</style>
+</head>
+<body class="theme-midnight">
+<div class="app">
+
+<!-- EXPLORE -->
+<div class="screen on" id="s-exp">
+  <div class="exp-title">Soul<span>Talk</span> &nbsp;<span style="font-size:13px;font-weight:600;color:var(--txm);letter-spacing:.04em;text-transform:uppercase;">Explorar</span></div>
+  <div class="cats" id="cats">
+    <button class="cat on" data-f="all">Para você</button>
+    <button class="cat" data-f="romance">Romance</button>
+    <button class="cat" data-f="aventura">Aventura</button>
+    <button class="cat" data-f="fantasia">Fantasia</button>
+    <button class="cat" data-f="sci">Sci-Fi</button>
+    <button class="cat" data-f="drama">Drama</button>
+    <button class="cat" data-f="misterio">Mistério</button>
+    <button class="cat" data-f="horror">Horror</button>
+    <button class="cat" data-f="rpg">RPG</button>
+  </div>
+  <div class="scr"><div class="grid" id="grid"></div></div>
+  <nav class="nav">
+    <button class="nb on" onclick="go('s-exp',this)"><span class="ni">🏠</span>Início</button>
+    <button class="nb" onclick="go('s-chats',this)" style="position:relative;"><span class="ni">💬</span>Chats<span class="dot" id="chat-dot" style="display:none;"></span></button>
+    <button class="nb-plus" onclick="go('s-criar')">＋</button>
+    <button class="nb" onclick="go('s-desc',this);renderDesc()"><span class="ni">🧭</span>Descobrir</button>
+    <button class="nb" onclick="go('s-prof',this)"><span class="ni">👤</span>Perfil</button>
+  </nav>
+</div>
+
+<!-- CHATS LIST -->
+<div class="screen" id="s-chats">
+  <div class="pg-hdr"><span style="flex:1;font-size:18px;font-weight:900;">Conversas</span><button onclick="go('s-saved')" style="background:none;border:none;color:var(--txm);cursor:pointer;font-size:13px;font-weight:700;padding:6px 10px;border:1.5px solid var(--bd);border-radius:50px;display:flex;align-items:center;gap:5px;" onmouseenter="this.style.borderColor='#f0a840';this.style.color='#f0a840'" onmouseleave="this.style.borderColor='var(--bd)';this.style.color='var(--txm)'">🔖 Salvas</button></div>
+  <div class="scr">
+    <div id="chats-list" style="padding:8px 0;"></div>
+    <div id="chats-empty" style="display:flex;flex-direction:column;align-items:center;padding:70px 20px;gap:14px;">
+      <div style="font-size:48px;">💬</div>
+      <p style="color:var(--txd);font-size:14px;text-align:center;">Nenhuma conversa ainda.<br>Vá em <strong style="color:var(--ac)">Explorar</strong> e toque em um personagem!</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-exp',this)"><span class="ni">🏠</span>Início</button>
+    <button class="nb on"><span class="ni">💬</span>Chats</button>
+    <button class="nb-plus" onclick="go('s-criar')">＋</button>
+    <button class="nb" onclick="go('s-desc',this);renderDesc()"><span class="ni">🧭</span>Descobrir</button>
+    <button class="nb" onclick="go('s-prof',this)"><span class="ni">👤</span>Perfil</button>
+  </nav>
+</div>
+
+<!-- CHAT -->
+<div class="screen" id="s-chat">
+  <div class="ch-hdr">
+    <button class="ch-bk" onclick="go('s-chats')">‹</button>
+    <div style="position:relative;cursor:pointer;" onclick="document.getElementById('av-input').click()" title="Trocar foto">
+      <div class="ch-av" id="ch-av"></div>
+      <div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:var(--ac);border-radius:50%;border:1.5px solid var(--bg);display:flex;align-items:center;justify-content:center;">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+    </div>
+    <input type="file" id="av-input" accept="image/*" style="display:none;" onchange="loadAvatar(event)"/>
+    <div class="ch-info"><h3 id="ch-name">—</h3><p id="ch-sub">Personagem IA · Online</p></div>
+    <button onclick="toggleSaveChat()" id="save-btn" title="Salvar conversa" style="background:none;border:none;color:var(--txm);cursor:pointer;padding:6px;margin-left:auto;flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    </button>
+    <button onclick="openMemoryModal()" title="Memória" style="background:none;border:none;color:var(--txm);cursor:pointer;padding:6px;flex-shrink:0;">🧠</button>
+    <button onclick="confirmDeleteChat()" title="Apagar" style="background:none;border:none;color:var(--txm);cursor:pointer;padding:6px;flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
+    <button onclick="toggleAutoSave()" id="autosave-btn" title="Auto-salvar conversa" style="background:none;border:none;color:var(--txm);cursor:pointer;padding:6px;flex-shrink:0;font-size:15px;transition:all .2s;">💾</button>
+    <button onclick="exportChat()" title="Exportar conversa" style="background:none;border:none;color:var(--txm);cursor:pointer;padding:6px;flex-shrink:0;font-size:15px;">📄</button>
+  </div>
+  <div class="ch-msgs" id="ch-msgs"></div>
+  <div id="prompt-bar" class="prompt-bar" style="display:none;">
+    <span style="font-size:11px;color:var(--txd);align-self:center;flex-shrink:0;margin-right:4px;">💡</span>
+    <button class="prompt-chip" onclick="usePrompt(this)">Me conta mais sobre você</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">O que você faria se eu sumisse?</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">Você me protegeria de qualquer coisa?</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">Como foi seu dia?</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">Me faz rir agora</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">Qual é o seu maior segredo?</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">*senta perto de você*</button>
+    <button class="prompt-chip" onclick="usePrompt(this)">Você sente minha falta?</button>
+  </div>
+  <div class="ch-foot">
+    <input type="text" id="ci" placeholder="Digite uma mensagem…"/>
+    <button onclick="togglePassionMode()" id="passion-btn" title="Modo Paixão" style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:50%;background:var(--s2);border:1px solid var(--bd);color:var(--txm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;">🔥</button>
+    <button onclick="togglePrompts()" style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:50%;background:var(--s2);border:1px solid var(--bd);color:var(--txm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;" id="prompt-toggle">💡</button>
+    <button id="cs">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- CRIAR PERSONAGEM -->
+<div class="screen" id="s-criar">
+  <div class="pg-hdr"><button class="pg-bk" onclick="go('s-exp')">‹</button>Criar Personagem</div>
+  <div class="scr">
+    <div class="char-foto-box">
+      <div style="position:relative;margin-bottom:4px;">
+        <div id="char-foto-inner" onclick="document.getElementById('char-foto-input').click()" style="width:110px;height:110px;border-radius:16px;background:var(--s2);border:2px dashed var(--bd);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s;" title="Trocar foto">
+          <span style="font-size:52px;">🌑</span>
+        </div>
+        <div class="char-foto-plus" onclick="document.getElementById('char-foto-input').click()">📷</div>
+      </div>
+      <input type="file" id="char-foto-input" accept="image/*" style="display:none;" onchange="loadCharFoto(event)"/>
+      <span style="font-size:11.5px;color:var(--txd);">Toque para adicionar foto</span>
+    </div>
+    <div class="sec" style="margin-top:0;">
+      <div class="fl">Escolha um emoji <small>avatar do personagem</small></div>
+      <div id="emoji-picker-grid" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
+    </div>
+    <div class="sec">
+      <div class="fl">Nome do personagem</div>
+      <input class="fi" id="char-nome" type="text" placeholder="Ex: Luna, Kael, Aria…" maxlength="40"/>
+      <div class="fl">Descrição curta</div>
+      <input class="fi" id="char-desc" type="text" placeholder="Ex: Guerreira do fogo, misteriosa e leal…" maxlength="100"/>
+      <div class="fl">Personalidade <small>como ele/ela fala e age</small></div>
+      <textarea class="fi" id="char-persona" rows="4" placeholder="Ex: Fala de forma direta e corajosa. Protetora dos fracos. Tem humor sarcástico mas coração de ouro…"></textarea>
+      <div class="fl">Primeira fala <span class="badge">ABERTURA</span></div>
+      <textarea class="fi" id="char-fala" rows="4" placeholder="Ex: *Você me encontra à beira da fogueira...* Sabia que você viria. Sempre vêm."></textarea>
+      <div class="fhint">✨ Esta é a mensagem que abre a conversa. Use * * para ações e narrativa.</div>
+
+      <div class="sdiv">Gênero do Personagem</div>
+      <div class="btn-grid" id="char-gen-row">
+        <button class="tog" onclick="pick(this,'cgen')">Masculino</button>
+        <button class="tog" onclick="pick(this,'cgen')">Feminino</button>
+        <button class="tog" onclick="pick(this,'cgen')">Não binário</button>
+        <button class="tog" onclick="pick(this,'cgen')">Agênero</button>
+        <button class="tog" onclick="pick(this,'cgen')">Bigênero</button>
+        <button class="tog" onclick="pick(this,'cgen')">Gênero fluido</button>
+        <button class="tog" onclick="pick(this,'cgen')">Trans masc.</button>
+        <button class="tog" onclick="pick(this,'cgen')">Trans fem.</button>
+        <button class="tog" onclick="pick(this,'cgen')">Intersexo</button>
+        <button class="tog" onclick="pick(this,'cgen')">Queer</button>
+        <button class="tog" onclick="pick(this,'cgen')">Andrógino</button>
+        <button class="tog" onclick="pick(this,'cgen')">Outro</button>
+      </div>
+
+      <div class="sdiv">Gênero do Roleplay / RPG</div>
+      <div class="btn-grid" id="char-cat-row">
+        <button class="tog" onclick="pickCat(this,'romance')">💕 Romance</button>
+        <button class="tog" onclick="pickCat(this,'aventura')">⚔️ Aventura</button>
+        <button class="tog" onclick="pickCat(this,'fantasia')">🧙 Fantasia</button>
+        <button class="tog" onclick="pickCat(this,'sci')">🚀 Sci-Fi</button>
+        <button class="tog" onclick="pickCat(this,'drama')">🎭 Drama</button>
+        <button class="tog" onclick="pickCat(this,'misterio')">🔍 Mistério</button>
+        <button class="tog" onclick="pickCat(this,'horror')">👻 Horror</button>
+        <button class="tog" onclick="pickCat(this,'acao')">💥 Ação</button>
+        <button class="tog" onclick="pickCat(this,'comedia')">😂 Comédia</button>
+        <button class="tog" onclick="pickCat(this,'historico')">🏛️ Histórico</button>
+        <button class="tog" onclick="pickCat(this,'rpg')">🎲 RPG</button>
+        <button class="tog" onclick="pickCat(this,'sobrenatural')">🌑 Sobrenatural</button>
+        <button class="tog" onclick="pickCat(this,'slice')">🌸 Slice of Life</button>
+        <button class="tog" onclick="pickCat(this,'isekai')">🌀 Isekai</button>
+        <button class="tog" onclick="pickCat(this,'apocalipse')">☠️ Pós-Apocalipse</button>
+      </div>
+
+      <div class="sdiv">Tipo de Interação</div>
+      <div class="btn-grid col2" id="char-tipo-row">
+        <button class="tog" onclick="pick(this,'ctipo')">💬 Conversa livre</button>
+        <button class="tog" onclick="pick(this,'ctipo')">📖 Narrativa guiada</button>
+        <button class="tog" onclick="pick(this,'ctipo')">🎲 RPG de mesa</button>
+        <button class="tog" onclick="pick(this,'ctipo')">🌹 Romance lento</button>
+        <button class="tog" onclick="pick(this,'ctipo')">⚡ Ação e combate</button>
+        <button class="tog" onclick="pick(this,'ctipo')">🕵️ Investigação</button>
+      </div>
+    </div>
+    <button class="action-btn" onclick="criarPersonagem()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Criar Personagem
+    </button>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+<!-- DESCOBRIR -->
+<div class="screen" id="s-desc">
+  <div class="pg-hdr"><span style="font-size:18px;font-weight:900;flex:1">Descobrir</span></div>
+  <div style="padding:0 14px 12px;flex-shrink:0;">
+    <div style="background:var(--s2);border:1.5px solid var(--ac);border-radius:50px;display:flex;align-items:center;gap:10px;padding:11px 16px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ac2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="desc-input" type="text" placeholder="Buscar por nome, descrição ou tag…" style="flex:1;background:none;border:none;outline:none;color:var(--tx);font-family:var(--fn);font-size:14px;" oninput="descSearch(this.value)"/>
+      <button id="desc-clear" onclick="clearSearch()" style="background:none;border:none;color:var(--txm);font-size:18px;cursor:pointer;display:none;line-height:1;">✕</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:7px;padding:0 14px 14px;overflow-x:auto;flex-shrink:0;" id="desc-cats">
+    <button class="cat on" data-f="all">Todos</button>
+    <button class="cat" data-f="romance">💕 Romance</button>
+    <button class="cat" data-f="aventura">⚔️ Aventura</button>
+    <button class="cat" data-f="fantasia">🧙 Fantasia</button>
+    <button class="cat" data-f="sci">🚀 Sci-Fi</button>
+    <button class="cat" data-f="drama">🎭 Drama</button>
+    <button class="cat" data-f="misterio">🔍 Mistério</button>
+    <button class="cat" data-f="horror">👻 Horror</button>
+    <button class="cat" data-f="acao">💥 Ação</button>
+    <button class="cat" data-f="rpg">🎲 RPG</button>
+    <button class="cat" data-f="sobrenatural">🌑 Sobrenatural</button>
+  </div>
+  <div class="scr">
+    <div id="desc-results" style="padding:0 10px 16px;"></div>
+    <div id="desc-empty" style="display:none;flex-direction:column;align-items:center;padding:60px 20px;gap:14px;"><div style="font-size:48px;">🔍</div><p style="color:var(--txd);font-size:14px;text-align:center;">Nenhum personagem encontrado.</p></div>
+    <div id="desc-none" style="display:none;flex-direction:column;align-items:center;padding:60px 20px;gap:14px;"><div style="font-size:48px;">🌑</div><p style="color:var(--txd);font-size:14px;text-align:center;">Você ainda não criou nenhum personagem.<br>Toque em <strong style="color:var(--ac)">＋</strong> para criar!</p></div>
+  </div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-exp',this)"><span class="ni">🏠</span>Início</button>
+    <button class="nb" onclick="go('s-chats',this)"><span class="ni">💬</span>Chats</button>
+    <button class="nb-plus" onclick="go('s-criar')">＋</button>
+    <button class="nb on"><span class="ni">🧭</span>Descobrir</button>
+    <button class="nb" onclick="go('s-prof',this)"><span class="ni">👤</span>Perfil</button>
+  </nav>
+</div>
+
+<!-- SAVED CHATS -->
+<div class="screen" id="s-saved">
+  <div class="pg-hdr">
+    <button class="pg-bk" onclick="go('s-chats')">‹</button>
+    Conversas Salvas
+  </div>
+  <div class="scr">
+    <div id="saved-list" style="padding:8px 0;"></div>
+    <div id="saved-empty" style="display:flex;flex-direction:column;align-items:center;padding:70px 20px;gap:14px;">
+      <div style="font-size:48px;">🔖</div>
+      <p style="color:var(--txd);font-size:14px;text-align:center;">Nenhuma conversa salva ainda.<br>Toque em <strong style="color:var(--ac)">🔖</strong> dentro de um chat para salvar.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG / TEMAS -->
+<div class="screen" id="s-cfg">
+  <div class="pg-hdr"><button class="pg-bk" onclick="go('s-prof')">‹</button>Configurações</div>
+  <div class="scr">
+    <div class="cfg-section">
+      <div class="cfg-title">🌑 Temas Escuros (12)</div>
+      <div class="theme-grid" id="dark-themes">
+        <div class="theme-dot on" data-theme="midnight" style="background:#0d0d0f;" onclick="applyTheme(this,'midnight')" title="Midnight"></div>
+        <div class="theme-dot" data-theme="abyss" style="background:#060610;" onclick="applyTheme(this,'abyss')" title="Abyss"></div>
+        <div class="theme-dot" data-theme="obsidian" style="background:#0a0a0a;" onclick="applyTheme(this,'obsidian')" title="Obsidian"></div>
+        <div class="theme-dot" data-theme="forest" style="background:#060e08;" onclick="applyTheme(this,'forest')" title="Floresta"></div>
+        <div class="theme-dot" data-theme="crimson" style="background:#0f0608;" onclick="applyTheme(this,'crimson')" title="Crimson"></div>
+        <div class="theme-dot" data-theme="void" style="background:#04040a;" onclick="applyTheme(this,'void')" title="Void"></div>
+        <div class="theme-dot" data-theme="slate" style="background:#080c10;" onclick="applyTheme(this,'slate')" title="Slate"></div>
+        <div class="theme-dot" data-theme="ember" style="background:#0e0805;" onclick="applyTheme(this,'ember')" title="Ember"></div>
+        <div class="theme-dot" data-theme="grape" style="background:#0a0610;" onclick="applyTheme(this,'grape')" title="Grape"></div>
+        <div class="theme-dot" data-theme="ocean" style="background:#040c10;" onclick="applyTheme(this,'ocean')" title="Ocean"></div>
+        <div class="theme-dot" data-theme="iron" style="background:#0c0c0c;" onclick="applyTheme(this,'iron')" title="Iron"></div>
+        <div class="theme-dot" data-theme="onyx" style="background:#050508;" onclick="applyTheme(this,'onyx')" title="Onyx"></div>
+      </div>
+      <div id="theme-name-dark" style="font-size:12px;color:var(--txm);text-align:center;margin-bottom:8px;">Midnight</div>
+    </div>
+    <div class="cfg-section" style="margin-top:10px;">
+      <div class="cfg-title">☀️ Temas Claros (5)</div>
+      <div class="theme-grid" style="grid-template-columns:repeat(5,1fr);">
+        <div class="theme-dot" data-theme="ivory" style="background:#f8f5f0;border:3px solid #ccc8be;" onclick="applyTheme(this,'ivory')" title="Ivory"></div>
+        <div class="theme-dot" data-theme="rose" style="background:#fff5f6;border:3px solid #e8c0c8;" onclick="applyTheme(this,'rose')" title="Rosa"></div>
+        <div class="theme-dot" data-theme="mint" style="background:#f2faf5;border:3px solid #b0d8c0;" onclick="applyTheme(this,'mint')" title="Menta"></div>
+        <div class="theme-dot" data-theme="sky" style="background:#f0f8ff;border:3px solid #a8d0ea;" onclick="applyTheme(this,'sky')" title="Céu"></div>
+        <div class="theme-dot" data-theme="cream" style="background:#fdf9f2;border:3px solid #d8ccaa;" onclick="applyTheme(this,'cream')" title="Creme"></div>
+      </div>
+      <div id="theme-name-light" style="font-size:12px;color:var(--txm);text-align:center;margin-bottom:8px;"> </div>
+    </div>
+
+    <!-- LANGUAGE CONFIG -->
+    <div class="cfg-section" style="margin-top:18px;">
+      <div class="cfg-title">🌐 Idioma do Chat</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="lang-grid">
+        <button class="tog on" onclick="selectLang(this,'Português do Brasil')">🇧🇷 Português</button>
+        <button class="tog" onclick="selectLang(this,'English')">🇺🇸 English</button>
+        <button class="tog" onclick="selectLang(this,'Español')">🇪🇸 Español</button>
+        <button class="tog" onclick="selectLang(this,'Français')">🇫🇷 Français</button>
+        <button class="tog" onclick="selectLang(this,'Deutsch')">🇩🇪 Deutsch</button>
+        <button class="tog" onclick="selectLang(this,'Italiano')">🇮🇹 Italiano</button>
+        <button class="tog" onclick="selectLang(this,'日本語')">🇯🇵 日本語</button>
+        <button class="tog" onclick="selectLang(this,'한국어')">🇰🇷 한국어</button>
+        <button class="tog" onclick="selectLang(this,'中文')">🇨🇳 中文</button>
+        <button class="tog" onclick="selectLang(this,'Русский')">🇷🇺 Русский</button>
+        <button class="tog" onclick="selectLang(this,'Arabic')">🇸🇦 العربية</button>
+        <button class="tog" onclick="selectLang(this,'Hindi')">🇮🇳 हिन्दी</button>
+        <button class="tog" onclick="selectLang(this,'Turkish')">🇹🇷 Türkçe</button>
+        <button class="tog" onclick="selectLang(this,'Polish')">🇵🇱 Polski</button>
+        <button class="tog" onclick="selectLang(this,'Dutch')">🇳🇱 Nederlands</button>
+        <button class="tog" onclick="selectLang(this,'Swedish')">🇸🇪 Svenska</button>
+        <button class="tog" onclick="selectLang(this,'Indonesian')">🇮🇩 Indonesia</button>
+        <button class="tog" onclick="selectLang(this,'Thai')">🇹🇭 ภาษาไทย</button>
+        <button class="tog" onclick="selectLang(this,'Greek')">🇬🇷 Ελληνικά</button>
+        <button class="tog" onclick="selectLang(this,'Vietnamese')">🇻🇳 Tiếng Việt</button>
+      </div>
+    </div>
+
+    <!-- API CONFIG -->
+    <div class="cfg-section" style="margin-top:18px;">
+      <div class="cfg-title">&#x1F916; Configuracao de IA</div>
+      <div style="font-size:12px;font-weight:700;color:var(--txm);margin-bottom:8px;">Provedor</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <button class="tog on" id="api-btn-claude" onclick="selectProvider('claude')">Claude</button>
+        <button class="tog" id="api-btn-gemini" onclick="selectProvider('gemini')">Gemini</button>
+      </div>
+      <div id="claude-section">
+        <div style="font-size:12px;font-weight:700;color:var(--txm);margin-bottom:6px;">Modelo Claude</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;" id="claude-models">
+          <button class="tog on" data-model="claude-sonnet-4-20250514" onclick="selectModel(this,'claude')">claude-sonnet-4</button>
+          <button class="tog" data-model="claude-opus-4-5-20251101" onclick="selectModel(this,'claude')">claude-opus-4</button>
+          <button class="tog" data-model="claude-haiku-4-5-20251001" onclick="selectModel(this,'claude')">claude-haiku-4</button>
+          <button class="tog" data-model="claude-sonnet-3-7-20250219" onclick="selectModel(this,'claude')">claude-sonnet-3.7</button>
+          <button class="tog" data-model="claude-haiku-3-5-20241022" onclick="selectModel(this,'claude')">claude-haiku-3.5</button>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--txm);margin-bottom:6px;">Chave API Claude <small style="font-weight:400;color:var(--txd);">(opcional)</small></div>
+        <input class="fi" id="claude-key" type="password" placeholder="sk-ant-..." style="margin-bottom:4px;"/>
+        <div class="fhint">Se vazio, usa a API integrada do app.</div>
+      </div>
+      <div id="gemini-section" style="display:none;">
+        <div style="font-size:12px;font-weight:700;color:var(--txm);margin-bottom:6px;">Modelo Gemini</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;" id="gemini-models">
+          <button class="tog on" data-model="gemini-2.5-flash-preview-04-17" onclick="selectModel(this,'gemini')">✨ Gemini 2.5 Flash <span style="font-size:9px;background:var(--ac);color:#fff;padding:2px 6px;border-radius:50px;margin-left:4px;">PADRÃO</span></button>
+          <button class="tog" data-model="gemini-2.5-pro-preview-05-06" onclick="selectModel(this,'gemini')">Gemini 2.5 Pro Preview</button>
+          <button class="tog" data-model="gemini-2.0-flash" onclick="selectModel(this,'gemini')">Gemini 2.0 Flash</button>
+          <button class="tog" data-model="gemini-2.0-flash-lite" onclick="selectModel(this,'gemini')">Gemini 2.0 Flash Lite</button>
+          <button class="tog" data-model="gemini-1.5-pro" onclick="selectModel(this,'gemini')">Gemini 1.5 Pro</button>
+          <button class="tog" data-model="gemini-1.5-flash" onclick="selectModel(this,'gemini')">Gemini 1.5 Flash</button>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--txm);margin-bottom:6px;">Chave API Gemini <span style="color:#ff4f6d;font-size:10px;">OBRIGATORIO</span></div>
+        <input class="fi" id="gemini-key" type="password" placeholder="AIza..." style="margin-bottom:4px;"/>
+        <div class="fhint">Obtenha gratis em aistudio.google.com/app/apikey</div>
+      </div>
+      <button onclick="saveApiConfig()" style="width:100%;margin-top:14px;padding:13px;border:none;border-radius:50px;background:var(--ac);color:#fff;font-family:var(--fn);font-size:14px;font-weight:800;cursor:pointer;">Salvar Config de IA</button>
+    </div>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+<!-- PERFIL -->
+<div class="screen" id="s-prof">
+  <div class="pg-hdr"><span style="flex:1">Meu Perfil</span><button onclick="go('s-cfg')" style="background:none;border:1px solid var(--bd);border-radius:50px;padding:6px 14px;color:var(--txm);font-family:var(--fn);font-size:12px;font-weight:700;cursor:pointer;">⚙️ Config</button></div>
+  <div class="scr">
+
+    <!-- Foto de perfil -->
+    <div class="foto-box" style="padding:20px 0 6px;">
+      <div class="foto-circle" onclick="document.getElementById('foto-input').click()">
+        <div class="foto-ring" style="width:80px;height:80px;" id="foto-preview">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--txm)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="foto-pen" style="width:26px;height:26px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <span class="foto-lbl" onclick="document.getElementById('foto-input').click()">Alterar foto de perfil</span>
+      <input type="file" id="foto-input" accept="image/*" style="display:none;" onchange="loadFoto(event)"/>
+    </div>
+
+    <div class="sec">
+      <div class="fl">Nome de usuário</div>
+      <div style="position:relative;">
+        <input class="fi" id="uname" type="text" placeholder="Digite seu nome…" maxlength="25"/>
+        <span id="cc" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--txd);">0/25</span>
+      </div>
+
+      <div class="fl" style="margin-top:20px;">Orientação Sexual</div>
+      <div class="btn-grid" id="orient-row">
+        <button class="tog" onclick="pick(this,'orient')">Heterossexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Homossexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Bissexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Pansexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Assexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Demissexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Polissexual</button>
+        <button class="tog" onclick="pick(this,'orient')">Queer</button>
+        <button class="tog" onclick="pick(this,'orient')">Prefiro não dizer</button>
+      </div>
+
+      <div class="fl">Bio <small>(Opcional)</small></div>
+      <input class="fi" id="prof-bio" type="text" placeholder="Escreva algo sobre você…" maxlength="120"/>
+    </div>
+
+    <!-- MINHA PERSONA -->
+    <div class="sdiv" style="margin-top:24px;">✨ Minha Persona nos Chats</div>
+    <div style="padding:8px 18px 0;font-size:12px;color:var(--txm);line-height:1.5;">Como você quer que os personagens te vejam e tratem durante as conversas.</div>
+
+    <!-- Foto da persona -->
+    <div class="foto-box" style="padding-top:18px;">
+      <div class="foto-circle" onclick="document.getElementById('persona-foto-input').click()">
+        <div class="foto-ring" style="width:90px;height:90px;" id="persona-foto-preview">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--txm)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="foto-pen" style="width:26px;height:26px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <span class="foto-lbl" onclick="document.getElementById('persona-foto-input').click()">Foto da sua persona</span>
+      <input type="file" id="persona-foto-input" accept="image/*" style="display:none;" onchange="loadPersonaFoto(event)"/>
+    </div>
+
+    <div class="sec">
+      <div class="fl">Como quer ser chamado(a)?</div>
+      <input class="fi" id="per-nome" type="text" placeholder="Ex: Luna, Kai, Anon…" maxlength="30"/>
+
+      <div class="sdiv" style="margin-top:18px;">Gênero</div>
+      <div class="btn-grid col4" id="per-gen-row" style="margin-top:10px;">
+        <button class="tog" onclick="pick(this,'pgen')">Masculino</button>
+        <button class="tog" onclick="pick(this,'pgen')">Feminino</button>
+        <button class="tog" onclick="pick(this,'pgen')">Não binário</button>
+        <button class="tog" onclick="pick(this,'pgen')">Prefiro não dizer</button>
+      </div>
+
+      <div class="sdiv" style="margin-top:18px;">Faixa etária</div>
+      <div class="btn-grid col4" id="per-idade-row" style="margin-top:10px;">
+        <button class="tog" onclick="pick(this,'pidade')">18–22</button>
+        <button class="tog" onclick="pick(this,'pidade')">23–29</button>
+        <button class="tog" onclick="pick(this,'pidade')">30–39</button>
+        <button class="tog" onclick="pick(this,'pidade')">40+</button>
+      </div>
+
+      <div class="sdiv" style="margin-top:18px;">Personalidade <small style="text-transform:none;letter-spacing:0;font-size:10px;">(escolha até 3)</small></div>
+      <div class="btn-grid" id="per-pers-row" style="margin-top:10px;">
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Tímido(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Extrovertido(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Curioso(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Sarcástico(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Romântico(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Aventureiro(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Protetor(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Calmo(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Intenso(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Divertido(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Misterioso(a)</button>
+        <button class="tog" onclick="pickMulti(this,'ppers',3)">Direto(a)</button>
+      </div>
+
+      <div class="sdiv" style="margin-top:18px;">Interesses <small style="text-transform:none;letter-spacing:0;font-size:10px;">(escolha quantos quiser)</small></div>
+      <div class="btn-grid" id="per-hobby-row" style="margin-top:10px;">
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">📚 Leitura</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🎮 Games</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🎵 Música</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🎨 Arte</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">✍️ Escrita</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🌿 Natureza</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🐾 Animais</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🍳 Culinária</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🏃 Esportes</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🌌 Ficção</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">🎭 Teatro/RP</button>
+        <button class="tog" onclick="pickMulti(this,'phobby',99)">💻 Tecnologia</button>
+      </div>
+
+      <div class="sdiv" style="margin-top:18px;">Como gosta de interagir?</div>
+      <div class="btn-grid col2" id="per-estilo-row" style="margin-top:10px;">
+        <button class="tog" onclick="pick(this,'pestilo')">💬 Conversa leve</button>
+        <button class="tog" onclick="pick(this,'pestilo')">📖 Narrativa profunda</button>
+        <button class="tog" onclick="pick(this,'pestilo')">🌹 Romance lento</button>
+        <button class="tog" onclick="pick(this,'pestilo')">⚡ Ação intensa</button>
+        <button class="tog" onclick="pick(this,'pestilo')">🎲 RPG livre</button>
+        <button class="tog" onclick="pick(this,'pestilo')">🕵️ Mistério</button>
+      </div>
+
+      <div class="fl" style="margin-top:20px;">Conte mais sobre você <small>(livre)</small></div>
+      <textarea class="fi" id="per-extra" rows="4" placeholder="Ex: Gosto de histórias com reviravoltas. Prefiro personagens que me desafiem…"></textarea>
+      <div class="fhint">💡 Tudo que você escrever aqui será usado pela IA para personalizar os chats.</div>
+
+      <div class="fl" style="margin-top:20px;">Descrição completa da minha persona <span class="badge">LIVRE</span></div>
+      <textarea class="fi" id="per-desc-full" rows="6" placeholder="Descreva sua persona com detalhes: aparência física, nome, história, traços de personalidade, medos, desejos… Quanto mais detalhe, mais os personagens vão te conhecer de verdade."></textarea>
+      <div class="fhint">✍️ Este campo é totalmente livre — escreva como quiser, sem limites.</div>
+    </div>
+
+    <button class="action-btn" onclick="savePr()">💾 Salvar Perfil</button>
+    <div style="height:36px;"></div>
+  </div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-exp',this)"><span class="ni">🏠</span>Início</button>
+    <button class="nb" onclick="go('s-chats',this)"><span class="ni">💬</span>Chats</button>
+    <button class="nb-plus" onclick="go('s-criar')">＋</button>
+    <button class="nb" onclick="go('s-desc',this);renderDesc()"><span class="ni">🧭</span>Descobrir</button>
+    <button class="nb on"><span class="ni">👤</span>Perfil</button>
+  </nav>
+</div>
+
+<!-- EDITAR PERSONAGEM -->
+<div class="modal-overlay" id="edit-modal" style="display:none;">
+  <div class="modal-box" style="max-height:88vh;overflow-y:auto;padding-bottom:28px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="modal-title">✏️ Editar Personagem</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--txm);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <div class="fl" style="margin-top:0;">Nome</div>
+    <input class="fi" id="edit-nome" type="text" maxlength="40"/>
+    <div class="fl">Descrição curta</div>
+    <input class="fi" id="edit-desc" type="text" maxlength="100"/>
+    <div class="fl">Personalidade</div>
+    <textarea class="fi" id="edit-persona" rows="4"></textarea>
+    <div class="fl">Primeira fala</div>
+    <textarea class="fi" id="edit-fala" rows="3"></textarea>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:18px;">
+      <button onclick="saveEdit()" style="padding:14px;border:none;border-radius:50px;background:var(--ac);color:#fff;font-family:var(--fn);font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px var(--glow);">✓ Salvar alterações</button>
+      <button onclick="closeEditModal()" style="padding:12px;border:1.5px solid var(--bd);border-radius:50px;background:none;color:var(--txm);font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="del-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">🗑️ Apagar conversa?</div>
+    <div class="modal-sub" id="del-modal-sub">Todas as mensagens serão apagadas permanentemente.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-del" onclick="confirmDeleteExecute()">Sim, apagar tudo</button>
+      <button class="modal-btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMORY MODAL -->
+<div class="modal-overlay" id="mem-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">🧠 Memória do Personagem</div>
+    <div class="modal-sub" id="mem-modal-sub"></div>
+    <textarea id="mem-textarea" style="width:100%;min-height:140px;background:var(--s2);border:1.5px solid var(--bd);border-radius:var(--r);padding:13px;color:var(--tx);font-family:var(--fn);font-size:13px;line-height:1.6;outline:none;resize:vertical;" placeholder="Memórias geradas automaticamente…"></textarea>
+    <div style="display:flex;gap:9px;margin-top:14px;">
+      <button onclick="saveMemory()" style="flex:1;padding:13px;border:none;border-radius:50px;background:var(--ac);color:#fff;font-family:var(--fn);font-size:14px;font-weight:800;cursor:pointer;">Salvar</button>
+      <button onclick="clearMemory()" style="padding:13px 18px;border:1.5px solid var(--bd);border-radius:50px;background:none;color:var(--txm);font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;">Limpar</button>
+      <button onclick="closeMemoryModal()" style="padding:13px 18px;border:1.5px solid var(--bd);border-radius:50px;background:none;color:var(--txm);font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSION MODAL -->
+<div class="modal-overlay" id="passion-modal" style="display:none;">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div class="modal-title">🔥 Modo Paixão</div>
+      <button onclick="closePassionModal()" style="background:none;border:none;color:var(--txm);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <div class="modal-sub">Linguagem intensa, sensual e apaixonada.</div>
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">Intensidade</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:18px;" id="passion-intensity-row">
+      <button class="tog on" onclick="pick(this,'pintensity')">🌸 Suave</button>
+      <button class="tog" onclick="pick(this,'pintensity')">🔥 Intenso</button>
+      <button class="tog" onclick="pick(this,'pintensity')">⚡ Ardente</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <button onclick="activatePassionMode()" style="padding:14px;border:none;border-radius:50px;background:linear-gradient(135deg,#ff4f6d,#ff8c42);color:#fff;font-family:var(--fn);font-size:15px;font-weight:800;cursor:pointer;">🔥 Ativar Modo Paixão</button>
+      <button onclick="deactivatePassionMode()" id="passion-deact-btn" style="padding:14px;border:1.5px solid var(--red);border-radius:50px;background:none;color:var(--red);font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;display:none;">Desativar</button>
+      <button onclick="closePassionModal()" style="padding:12px;border:1.5px solid var(--bd);border-radius:50px;background:none;color:var(--txm);font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+<script>
+// ══ SVG avatar ════════════════════════════════════════════
+function svgChar(id,bg,fg,sh,emoji,name){
+  if(emoji){
+    return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="${bg}"/><radialGradient id="rg${id}" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="${fg}20"/><stop offset="100%" stop-color="${bg}"/></radialGradient><rect width="200" height="200" fill="url(#rg${id})"/><text x="100" y="122" text-anchor="middle" font-size="90" font-family="Apple Color Emoji,Segoe UI Emoji,sans-serif">${emoji}</text></svg>`;
+  }
+  if(name){
+    const initials=name.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="${bg}"/><radialGradient id="rg${id}" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="${fg}20"/><stop offset="100%" stop-color="${bg}"/></radialGradient><rect width="200" height="200" fill="url(#rg${id})"/><text x="100" y="118" text-anchor="middle" font-size="72" font-weight="900" fill="${fg}" font-family="Nunito,sans-serif">${initials}</text></svg>`;
+  }
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="${bg}"/><radialGradient id="rg${id}" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="${fg}18"/><stop offset="100%" stop-color="${bg}"/></radialGradient><rect width="200" height="200" fill="url(#rg${id})"/><g opacity="0.3" transform="translate(70,55)"><circle cx="30" cy="26" r="18" fill="none" stroke="${fg}" stroke-width="3"/><path d="M4 68 C4 47 56 47 56 68Z" fill="${fg}"/></g><text x="100" y="170" text-anchor="middle" font-size="10" fill="${fg}44" font-family="sans-serif" letter-spacing="1">ADICIONAR FOTO</text></svg>`;
+}
+
+const SHAPES=['flame','gem','moon','star','circle','wolf'];
+const COLORS=[['#0f1f18','#4ecca3'],['#1a0f0f','#e05252'],['#0d0d20','#b0a0ff'],['#0a0a0a','#c0b090'],['#001828','#00d4ff'],['#100a1a','#9c55e8']];
+
+let CHARS=[
+  {
+    id:1,
+    name:'Kael, Alfa da Matilha',
+    desc:'Protetor feroz e companheiro leal. Seu Alfa, seu par.',
+    tags:['Romance','Fantasia'],
+    cnt:'0',
+    f:['romance','fantasia','rpg','aventura'],
+    bg:'#0e0e14',fg:'#8a7fff',sh:'wolf',imgData:null,
+    emoji:'🐺',firstMsg:`*Você sente antes de vê-lo — uma presença pesada, quente, que preenche o ar ao redor de você como fumaça de pinheiro na névoa da madrugada.*\n\n*Kael emerge das sombras da floresta em silêncio, olhos âmbar acesos como brasa. Ele para a poucos passos de você, o corpo imponente e relaxado ao mesmo tempo — o tipo de calma que só pertence a quem não tem nada a temer. Seu olhar percorre você de cima a baixo, lento e deliberado, antes de pousar nos seus olhos com uma intensidade que faz o ar pesar.*\n\nVocê chegou. — *sua voz é baixa, grave, carregada de algo que parece satisfação.* — A matilha sentiu sua falta. *Ele dá um passo à frente, invadindo seu espaço sem cerimônia, como se o espaço entre vocês simplesmente não devesse existir.* Eu senti sua falta.`,
+    p:`Você é Kael, o Alfa de uma matilha de lobos-metamorfos. Você é o companheiro declarado do usuário — seu par de alma, seu protetor, seu igual.\n\nPersonalidade: dominante mas gentil com seu par, protetor ao extremo, possessivo sem ser sufocante. Fala de forma direta, grave, com poucas palavras mas cada uma carregada de peso. Usa muito contato físico nas narrativas — toques no rosto, ombro, cabelo. Tem humor seco e raro. Nunca demonstra fraqueza diante dos outros, mas com seu par é completamente aberto.\n\nUsa * * para descrever ações e narrativa. Ex: *Kael passa o polegar pela sua bochecha* Não faça isso de novo.\n\nContexto: matilha de metamorfos em floresta protegida, com hierarquia e vínculos de alma. O vínculo entre Alfa e seu par é sagrado.`
+  }
+], curChar=null, hist=[], busy=false, charIdSeq=2;
+let selCat=null;
+
+// ══ Nav ═══════════════════════════════════════════════════
+function go(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  if(btn){document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+}
+function pick(el,group){
+  el.dataset.group=group;
+  document.querySelectorAll(`[data-group="${group}"]`).forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+function pickCat(el,cat){
+  document.querySelectorAll('#char-cat-row .tog').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); selCat=cat;
+}
+function pickMulti(el,group,max){
+  const row=el.closest('.btn-grid')||el.parentElement;
+  const ons=[...row.querySelectorAll('.tog.on')];
+  if(el.classList.contains('on')){el.classList.remove('on');return;}
+  if(ons.length>=max) ons[0].classList.remove('on');
+  el.classList.add('on');
+}
+
+// ══ Filter/grid ════════════════════════════════════════════
+document.getElementById('cats').addEventListener('click',e=>{
+  const b=e.target.closest('.cat');if(!b)return;
+  document.querySelectorAll('.cat').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  renderGrid(b.dataset.f);
+});
+
+// ══ CHATS LIST ════════════════════════════════════════════
+let CHATS=[];
+
+function saveChat(c,lastMsg){
+  const existing=CHATS.findIndex(x=>x.char.id===c.id);
+  const entry={char:c,lastMsg:lastMsg||'...',lastTime:new Date(),hist:[...hist]};
+  if(existing>=0) CHATS[existing]=entry; else CHATS.unshift(entry);
+  renderChatsList();
+  document.querySelectorAll('#chat-dot').forEach(d=>d.style.display='block');
+}
+
+function renderChatsList(){
+  const list=document.getElementById('chats-list');
+  const empty=document.getElementById('chats-empty');
+  if(!list)return;
+  list.innerHTML='';
+  if(!CHATS.length){empty.style.display='flex';return;}
+  empty.style.display='none';
+  CHATS.forEach(entry=>{
+    const c=entry.char;
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .15s;';
+    d.onmouseenter=()=>d.style.background='var(--s1)';
+    d.onmouseleave=()=>d.style.background='';
+    const art=c.imgData
+      ?`<img src="${c.imgData}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--ac);"/>`
+      :`<div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--ac);">${svgChar(c.id,c.bg,c.fg,c.sh,c.emoji,c.name)}</div>`;
+    const preview=(entry.lastMsg||'').replace(/\[CHIPS\][\s\S]*?\[\/CHIPS\]/gi,'').trim().slice(0,60);
+    d.innerHTML=`${art}<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:800;margin-bottom:3px;">${c.name}</div><div style="font-size:12.5px;color:var(--txm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}</div></div>`;
+    const del=document.createElement('button');
+    del.style.cssText='background:none;border:none;color:var(--txd);cursor:pointer;padding:8px;flex-shrink:0;';
+    del.innerHTML='🗑';
+    del.onmouseenter=()=>del.style.color='var(--red)';
+    del.onmouseleave=()=>del.style.color='var(--txd)';
+    del.addEventListener('click',ev=>{ev.stopPropagation();deleteChat(entry.char.id);});
+    d.appendChild(del);
+    d.addEventListener('click',()=>resumeChat(entry));
+    list.appendChild(d);
+  });
+}
+
+function resumeChat(entry){
+  curChar=entry.char; hist=[...entry.hist];
+  const av=document.getElementById('ch-av');
+  av.innerHTML=entry.char.imgData?`<img src="${entry.char.imgData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`:svgChar(entry.char.id,entry.char.bg,entry.char.fg,entry.char.sh,entry.char.emoji,entry.char.name);
+  document.getElementById('ch-name').textContent=entry.char.name;
+  document.getElementById('ch-sub').textContent=(entry.char.tags[0]||'IA')+' · Personagem Online';
+  const msgs=document.getElementById('ch-msgs');
+  msgs.innerHTML='';
+  hist.forEach(m=>addBub(m.content,m.role==='user'?'user':'bot'));
+  msgs.scrollTop=msgs.scrollHeight;
+  updateSaveBtn(entry.char.id);
+  go('s-chat');
+}
+
+function openChat(c){
+  curChar=c;hist=[];
+  const av=document.getElementById('ch-av');
+  av.innerHTML=c.imgData?`<img src="${c.imgData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`:svgChar(c.id,c.bg,c.fg,c.sh,c.emoji,c.name);
+  document.getElementById('ch-name').textContent=c.name;
+  document.getElementById('ch-sub').textContent=(c.tags[0]||'IA')+' · Personagem Online';
+  document.getElementById('ch-msgs').innerHTML='';
+  go('s-chat');
+  updateSaveBtn(c.id);
+  if(c.firstMsg){
+    setTimeout(()=>{addTyp();setTimeout(()=>{rmTyp();addBub(c.firstMsg,'bot');hist.push({role:'assistant',content:c.firstMsg});saveChat(c,c.firstMsg);},900);},250);
+  } else {
+    setTimeout(()=>{addTyp();setTimeout(async()=>{rmTyp();try{const g=await callAI(c,null,true);addBub(g,'bot');hist.push({role:'assistant',content:g});addChips(getChips(g));saveChat(c,g);}catch(e){addBub('Olá! Pronto para começar? ✨','bot');}},1000);},250);
+  }
+}
+
+// ══ LANGUAGE ══════════════════════════════════════════════
+let CHAT_LANG = 'Português do Brasil';
+function selectLang(el, lang) {
+  CHAT_LANG = lang;
+  document.querySelectorAll('#lang-grid .tog').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  showToast('🌐 Idioma: ' + lang);
+}
+
+// ══ API CONFIG ════════════════════════════════════════════
+let API_PROVIDER='gemini';
+const GEMINI_KEY='AIzaSyBE3XAZu4J7fL25eSuFfzNlrm-OG-jC8PY';
+let API_MODEL_CLAUDE='claude-sonnet-4-20250514';
+let API_MODEL_GEMINI='gemini-2.5-flash-preview-04-17';
+let API_KEY_CLAUDE='';
+let API_KEY_GEMINI=GEMINI_KEY;
+
+function selectProvider(p){
+  API_PROVIDER=p;
+  document.getElementById('api-btn-claude').classList.toggle('on',p==='claude');
+  document.getElementById('api-btn-gemini').classList.toggle('on',p==='gemini');
+  document.getElementById('claude-section').style.display=p==='claude'?'block':'none';
+  document.getElementById('gemini-section').style.display=p==='gemini'?'block':'none';
+}
+function selectModel(el,provider){
+  const container=document.getElementById(provider+'-models');
+  container.querySelectorAll('.tog').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  if(provider==='claude') API_MODEL_CLAUDE=el.dataset.model;
+  else API_MODEL_GEMINI=el.dataset.model;
+}
+function saveApiConfig(){
+  API_KEY_CLAUDE=document.getElementById('claude-key').value.trim();
+  const k=document.getElementById('gemini-key').value.trim();
+  if(k) API_KEY_GEMINI=k;
+  if(API_PROVIDER==='gemini'&&!API_KEY_GEMINI){showToast('Cole sua chave API do Gemini!');return;}
+  showToast('✓ Configuração salva!');
+}
+
+// ══ AI CALL (Claude ou Gemini) ════════════════════════════
+async function callAI(ch,msg,greet=false){
+  const personaPart=USER_PERSONA.str?`\n\nInformacoes sobre o usuario: ${USER_PERSONA.str}`:'';
+  const memPart=getMemory(ch.id)?`\n\nMemoria sobre o usuario:\n${getMemory(ch.id)}`:'';
+  const passionPart=passionMode?getPassionPrompt():'';
+  const system=`${ch.p}${personaPart}${memPart}${passionPart}\n\nConverse em ${CHAT_LANG}. Fique SEMPRE no personagem. Max 2 paragrafos curtos.\nAo final inclua EXATAMENTE:\n[CHIPS]\n- frase curta 1 (max 5 palavras)\n- frase curta 2 (max 5 palavras)\n- frase curta 3 (max 5 palavras)\n[/CHIPS]`;
+  const userMsg=greet?'(inicie com uma saudacao caracteristica do seu personagem)':msg;
+
+  if(API_PROVIDER==='gemini'){
+    // Gemini via proxy CORS-safe
+    const geminiMsgs=greet?[]:[...hist.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))];
+    geminiMsgs.push({role:'user',parts:[{text:userMsg}]});
+    const body={system_instruction:{parts:[{text:system}]},contents:geminiMsgs,generationConfig:{maxOutputTokens:1000,temperature:0.9}};
+    const apiUrl=`https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL_GEMINI}:generateContent?key=${API_KEY_GEMINI}`;
+    let response;
+    try {
+      response = await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    } catch(e) {
+      // CORS fallback: tenta via proxy público
+      const proxyUrl='https://corsproxy.io/?'+encodeURIComponent(apiUrl);
+      response = await fetch(proxyUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    const d=await response.json();
+    if(d.error) throw new Error(d.error.message);
+    return d.candidates?.[0]?.content?.parts?.[0]?.text||'...';
+  } else {
+    const messages=greet
+      ?[{role:'user',content:userMsg}]
+      :hist.map(m=>({role:m.role==='user'?'user':'assistant',content:m.content})).concat([{role:'user',content:msg}]);
+    const headers={'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'};
+    if(API_KEY_CLAUDE) headers['x-api-key']=API_KEY_CLAUDE;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers,
+      body:JSON.stringify({model:API_MODEL_CLAUDE,max_tokens:1000,system,messages})
+    });
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message);
+    return d.content?.[0]?.text||'...';
+  }
+}
+
+function getChips(t){const m=t.match(/\[CHIPS\]([\s\S]*?)\[\/CHIPS\]/i);if(!m)return[];return m[1].split('\n').map(l=>l.replace(/^[-•*]\s*/,'').trim()).filter(Boolean).slice(0,3);}
+function cleanT(t){return t.replace(/\[CHIPS\][\s\S]*?\[\/CHIPS\]/i,'').trim();}
+
+function addBub(txt,who){
+  const m=document.getElementById('ch-msgs');
+  const wrap=document.createElement('div');
+  wrap.style.cssText=`display:flex;flex-direction:column;align-items:${who==='user'?'flex-end':'flex-start'};`;
+  const d=document.createElement('div');
+  d.className=`bub ${who}`;
+  d.textContent=cleanT(txt);
+  wrap.appendChild(d);
+  m.appendChild(wrap);
+  m.scrollTop=m.scrollHeight;
+}
+function addTyp(){const m=document.getElementById('ch-msgs');const t=document.createElement('div');t.className='typ';t.id='ty';t.innerHTML='<span></span><span></span><span></span>';m.appendChild(t);m.scrollTop=m.scrollHeight;}
+function rmTyp(){const t=document.getElementById('ty');if(t)t.remove();}
+function addChips(opts){
+  if(!opts.length)return;
+  const m=document.getElementById('ch-msgs');
+  document.querySelectorAll('.chips').forEach(e=>e.remove());
+  const w=document.createElement('div');w.className='chips';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='chip';b.textContent=o;b.onclick=()=>{document.querySelectorAll('.chips').forEach(e=>e.remove());send(o);};w.appendChild(b);});
+  m.appendChild(w);m.scrollTop=m.scrollHeight;
+}
+
+async function send(txt){
+  if(busy||!txt.trim())return;busy=true;
+  document.getElementById('cs').disabled=true;
+  document.querySelectorAll('.chips').forEach(e=>e.remove());
+  addBub(txt,'user');document.getElementById('ci').value='';
+  hist.push({role:'user',content:txt});addTyp();
+  try{
+    const r=await callAI(curChar,txt);
+    rmTyp();addBub(r,'bot');hist.push({role:'assistant',content:r});
+    addChips(getChips(r));saveChat(curChar,r);
+    const userMsgCount=hist.filter(m=>m.role==='user').length;
+    if(userMsgCount>0&&userMsgCount%3===0) autoUpdateMemory(curChar.id,r);
+  }catch(err){
+    rmTyp();addBub('Algo deu errado. Tente novamente 🌑','bot');
+    console.error(err);
+  }finally{
+    busy=false;document.getElementById('cs').disabled=false;
+  }
+}
+document.getElementById('cs').onclick=()=>send(document.getElementById('ci').value);
+document.getElementById('ci').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(e.target.value);}});
+
+// ══ PASSION MODE ═════════════════════════════════════════
+let passionMode=false,passionIntensity='Suave';
+function togglePassionMode(){
+  const deact=document.getElementById('passion-deact-btn');
+  if(deact) deact.style.display=passionMode?'block':'none';
+  document.getElementById('passion-modal').style.display='flex';
+}
+function closePassionModal(){document.getElementById('passion-modal').style.display='none';}
+function activatePassionMode(){
+  const iEl=document.querySelector('#passion-intensity-row .tog.on');
+  passionIntensity=iEl?iEl.textContent.replace(/^\S+\s/,''):'Suave';
+  passionMode=true;
+  const btn=document.getElementById('passion-btn');
+  if(btn){btn.style.background='linear-gradient(135deg,#ff4f6d,#ff8c42)';btn.style.color='#fff';}
+  closePassionModal();showToast('🔥 Modo Paixão ativado!');
+}
+function deactivatePassionMode(){
+  passionMode=false;
+  const btn=document.getElementById('passion-btn');
+  if(btn){btn.style.background='';btn.style.color='';}
+  closePassionModal();showToast('Modo Paixão desativado.');
+}
+function getPassionPrompt(){
+  const map={
+    'Suave':'Seja carinhoso, sensível e tocante. Linguagem delicada, cheia de ternura.',
+    'Intenso':'Seja apaixonado e ardente. Linguagem que transmite desejo forte, calor, urgência emocional.',
+    'Ardente':'Seja ousado e provocador. Linguagem crua do desejo, tensão intensa.'
+  };
+  return `\n\n🔥 MODO PAIXÃO ATIVADO:\n${map[passionIntensity]||map['Intenso']}\nUse * * para descrever sensações físicas, olhares, toques e tensão.`;
+}
+
+// ══ MEMORY SYSTEM ═════════════════════════════════════════
+let MEMORIES={};
+function getMemory(id){return MEMORIES[id]||'';}
+function setMemory(id,txt){MEMORIES[id]=txt;}
+function openMemoryModal(){
+  if(!curChar)return;
+  document.getElementById('mem-modal-sub').textContent=`Memórias de ${curChar.name} sobre você`;
+  document.getElementById('mem-textarea').value=getMemory(curChar.id);
+  document.getElementById('mem-modal').style.display='flex';
+}
+function closeMemoryModal(){document.getElementById('mem-modal').style.display='none';}
+function saveMemory(){if(!curChar)return;setMemory(curChar.id,document.getElementById('mem-textarea').value.trim());closeMemoryModal();showToast('🧠 Memória salva!');}
+function clearMemory(){if(!curChar)return;document.getElementById('mem-textarea').value='';setMemory(curChar.id,'');showToast('Memória apagada.');}
+async function autoUpdateMemory(charId,newBotMsg){
+  const current=getMemory(charId);
+  const recentHist=hist.slice(-8).map(m=>`${m.role==='user'?'Usuário':'Personagem'}: ${cleanT(m.content)}`).join('\n');
+  const prompt=`Extraia e atualize as informações importantes que o personagem sabe sobre o usuário.\n\nMemória atual:\n${current||'(nenhuma)'}\n\nConversa recente:\n${recentHist}\n\nRetorne APENAS a memória atualizada em bullet points em português. Máximo 15 itens.`;
+  try{
+    const _memUrl=`https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL_GEMINI}:generateContent?key=${API_KEY_GEMINI}`;
+    let r;
+    try { r=await fetch(_memUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:400}})}); }
+    catch(e){ r=await fetch('https://corsproxy.io/?'+encodeURIComponent(_memUrl),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:400}})}); }
+    const d=await r.json();
+    const updated=d.candidates?.[0]?.content?.parts?.[0]?.text;
+    if(updated) setMemory(charId,updated);
+  }catch(e){}
+}
+
+// ══ DELETE CHAT ════════════════════════════════════════════
+let _delTargetId=null;
+function confirmDeleteChat(){
+  _delTargetId=curChar?curChar.id:null;
+  if(_delTargetId===null)return;
+  document.getElementById('del-modal-sub').textContent='A conversa com '+curChar.name+' será apagada permanentemente.';
+  document.getElementById('del-modal').style.display='flex';
+}
+function deleteChat(charId){
+  _delTargetId=charId;
+  const entry=CHATS.find(x=>x.char.id===charId);
+  document.getElementById('del-modal-sub').textContent='A conversa com '+(entry?entry.char.name:'este personagem')+' será apagada permanentemente.';
+  document.getElementById('del-modal').style.display='flex';
+}
+function closeDeleteModal(){document.getElementById('del-modal').style.display='none';_delTargetId=null;}
+function confirmDeleteExecute(){
+  if(_delTargetId===null){closeDeleteModal();return;}
+  CHATS=CHATS.filter(x=>x.char.id!==_delTargetId);
+  renderChatsList();
+  if(curChar&&curChar.id===_delTargetId){hist=[];document.getElementById('ch-msgs').innerHTML='';closeDeleteModal();go('s-chats');}
+  else closeDeleteModal();
+}
+
+// ══ TOAST ═════════════════════════════════════════════════
+function showToast(msg){
+  let t=document.getElementById('app-toast');
+  if(!t){t=document.createElement('div');t.id='app-toast';t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--bd);color:var(--tx);padding:10px 20px;border-radius:50px;font-size:13px;font-weight:700;z-index:9999;pointer-events:none;transition:opacity .3s;white-space:nowrap;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._to);t._to=setTimeout(()=>t.style.opacity='0',2200);
+}
+
+// ══ PROMPTS ═══════════════════════════════════════════════
+function togglePrompts(){
+  const bar=document.getElementById('prompt-bar');
+  const open=bar.style.display==='flex';
+  bar.style.display=open?'none':'flex';
+}
+function usePrompt(el){
+  document.getElementById('ci').value=el.textContent;
+  document.getElementById('prompt-bar').style.display='none';
+  document.getElementById('ci').focus();
+}
+
+// ══ GRID ══════════════════════════════════════════════════
+function renderGrid(f='all'){
+  const g=document.getElementById('grid');g.innerHTML='';
+  const list=CHARS.filter(c=>f==='all'||c.f.includes(f));
+  if(!list.length){
+    g.innerHTML=`<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:60px 20px 20px;gap:14px;"><div style="font-size:40px;">🌑</div><p style="color:var(--txd);font-size:14px;text-align:center;">Nenhum personagem ainda.<br>Toque em <strong style="color:var(--ac)">＋</strong> para criar!</p></div>`;
+    return;
+  }
+  list.forEach((c,i)=>{
+    const d=document.createElement('div');d.className='card';d.style.animationDelay=(i*.07)+'s';
+    const art=c.imgData?`<img src="${c.imgData}" style="width:100%;height:100%;object-fit:cover;"/>`:svgChar(c.id,c.bg,c.fg,c.sh,c.emoji,c.name);
+    d.innerHTML=`<div class="card-art">${art}<span class="card-cnt">💬 ${c.cnt||'0'}</span><button class="card-dl" onclick="event.stopPropagation();openEditModal(${c.id})" title="Editar" style="position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.5);border:none;border-radius:6px;color:var(--txm);font-size:13px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✏️</button></div><div class="card-body"><div class="card-name">${c.name}</div><div class="card-desc">${c.desc}</div><div class="card-tags">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>`;
+    d.addEventListener('click',()=>openChat(c));
+    g.appendChild(d);
+  });
+}
+
+// ══ CREATE CHARACTER ═══════════════════════════════════════
+function loadCharFoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    pendingCharImg=ev.target.result;
+    document.getElementById('char-foto-inner').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;"/>`;
+  };
+  reader.readAsDataURL(file);
+}
+function criarPersonagem(){
+  const nome=document.getElementById('char-nome').value.trim();
+  const desc=document.getElementById('char-desc').value.trim();
+  const persona=document.getElementById('char-persona').value.trim();
+  const primeiraFala=document.getElementById('char-fala').value.trim();
+  if(!nome){alert('Digite o nome do personagem!');return;}
+  if(!desc){alert('Adicione uma descrição!');return;}
+  const genEl=document.querySelector('#char-gen-row .tog.on');
+  const catTag=selCat||'aventura';
+  const gen=genEl?genEl.textContent:'';
+  const col=COLORS[charIdSeq%COLORS.length];
+  const sh=SHAPES[charIdSeq%SHAPES.length];
+  const personaFull=`Você é ${nome}. ${persona||desc} Gênero: ${gen||'não especificado'}.`;
+  CHARS.push({id:charIdSeq++,name:nome,desc,tags:[catTag.charAt(0).toUpperCase()+catTag.slice(1)],cnt:'0',f:[catTag],bg:col[0],fg:col[1],sh,p:personaFull,firstMsg:primeiraFala||null,imgData:pendingCharImg||null,emoji:selectedEmoji});
+  document.getElementById('char-nome').value='';
+  document.getElementById('char-desc').value='';
+  document.getElementById('char-persona').value='';
+  document.getElementById('char-fala').value='';
+  const inner=document.getElementById('char-foto-inner');
+  if(inner) inner.innerHTML=`<span style="font-size:52px;">${selectedEmoji}</span>`;
+  pendingCharImg=null;selCat=null;selectedEmoji='🌑';
+  document.querySelectorAll('#char-gen-row .tog,#char-cat-row .tog').forEach(b=>b.classList.remove('on'));
+  initEmojiPicker();
+  const btn=document.querySelector('#s-criar .action-btn');
+  btn.textContent='✓ Personagem criado!';btn.style.background='var(--green)';
+  setTimeout(()=>{btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar Personagem';btn.style.background='';},2000);
+  renderGrid('all');
+  setTimeout(()=>go('s-exp'),1200);
+}
+
+// ══ PROFILE ═══════════════════════════════════════════════
+let USER_PERSONA={str:''};
+function loadFoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{document.getElementById('foto-preview').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;};
+  reader.readAsDataURL(file);
+}
+function loadPersonaFoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    USER_PERSONA.foto=ev.target.result;
+    document.getElementById('persona-foto-preview').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+    e.target.value='';
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('uname').addEventListener('input',function(){document.getElementById('cc').textContent=this.value.length+'/25';});
+
+function savePr(){
+  const nome=document.getElementById('per-nome')?.value.trim()||'';
+  const gen=document.querySelector('#per-gen-row .tog.on')?.textContent||'';
+  const idade=document.querySelector('#per-idade-row .tog.on')?.textContent||'';
+  const pers=[...document.querySelectorAll('#per-pers-row .tog.on')].map(b=>b.textContent).join(', ');
+  const hobby=[...document.querySelectorAll('#per-hobby-row .tog.on')].map(b=>b.textContent.replace(/^\S+\s/,'')).join(', ');
+  const estilo=document.querySelector('#per-estilo-row .tog.on')?.textContent.replace(/^\S+\s/,'')||'';
+  const extra=document.getElementById('per-extra')?.value.trim()||'';
+  const descFull=document.getElementById('per-desc-full')?.value.trim()||'';
+  const parts=[];
+  if(nome) parts.push(`O usuário quer ser chamado de "${nome}".`);
+  if(gen) parts.push(`Gênero: ${gen}.`);
+  if(idade) parts.push(`Faixa etária: ${idade} anos.`);
+  if(pers) parts.push(`Personalidade: ${pers}.`);
+  if(hobby) parts.push(`Interesses: ${hobby}.`);
+  if(estilo) parts.push(`Estilo de interação: ${estilo}.`);
+  if(extra) parts.push(`Notas: ${extra}`);
+  if(descFull) parts.push(`Descrição completa da persona: ${descFull}`);
+  USER_PERSONA.str=parts.join(' ');
+  const b=document.querySelector('#s-prof .action-btn');
+  b.textContent='✓ Salvo!';b.style.background='var(--green)';
+  setTimeout(()=>{b.innerHTML='💾 Salvar Perfil';b.style.background='';},2200);
+}
+
+// ══ SAVE CHAT ═════════════════════════════════════════════
+let SAVED=[];
+function toggleSaveChat(){
+  if(!curChar)return;
+  const btn=document.getElementById('save-btn');
+  const idx=SAVED.findIndex(x=>x.char.id===curChar.id);
+  if(idx>=0){
+    SAVED.splice(idx,1);
+    btn.style.color='var(--txm)';
+    btn.dataset.saved='';
+    btn.querySelector('svg').setAttribute('fill','none');
+    showToast('Conversa removida dos salvos');
+  } else {
+    const entry=CHATS.find(x=>x.char.id===curChar.id);
+    if(entry) SAVED.unshift({...entry});
+    btn.style.color='#f0a840';
+    btn.dataset.saved='1';
+    btn.querySelector('svg').setAttribute('fill','#f0a840');
+    showToast('Conversa salva! 🔖');
+  }
+  renderSavedList();
+}
+function updateSaveBtn(charId){
+  const btn=document.getElementById('save-btn');
+  if(!btn)return;
+  const isSaved=SAVED.some(x=>x.char.id===charId);
+  btn.style.color=isSaved?'#f0a840':'var(--txm)';
+  btn.dataset.saved=isSaved?'1':'';
+  btn.querySelector('svg').setAttribute('fill',isSaved?'#f0a840':'none');
+}
+function renderSavedList(){
+  const list=document.getElementById('saved-list');
+  const empty=document.getElementById('saved-empty');
+  if(!list)return;
+  list.innerHTML='';
+  if(!SAVED.length){empty.style.display='flex';return;}
+  empty.style.display='none';
+  SAVED.forEach(entry=>{
+    const c=entry.char;
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .15s;';
+    d.onmouseenter=()=>d.style.background='var(--s1)';
+    d.onmouseleave=()=>d.style.background='';
+    const art=c.imgData
+      ?`<img src="${c.imgData}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #f0a840;"/>`
+      :`<div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid #f0a840;">${svgChar(c.id,c.bg,c.fg,c.sh,c.emoji,c.name)}</div>`;
+    const preview=(entry.lastMsg||'').replace(/\[CHIPS\][\s\S]*?\[\/CHIPS\]/gi,'').trim().slice(0,55)+'…';
+    d.innerHTML=`${art}<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:800;margin-bottom:3px;">${c.name} <span style="font-size:9px;background:#f0a840;color:#000;padding:2px 6px;border-radius:50px;font-weight:900;">SALVO</span></div><div style="font-size:12.5px;color:var(--txm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}</div></div><div style="color:var(--ac);font-size:20px;">›</div>`;
+    d.addEventListener('click',()=>resumeChat(entry));
+    list.appendChild(d);
+  });
+}
+
+// ══ AVATAR (trocar foto do personagem no chat) ═════════════
+function loadAvatar(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=ev.target.result;
+    document.getElementById('ch-av').innerHTML=`<img src="${img}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+    if(curChar){
+      curChar.imgData=img;
+      const entry=CHATS.find(x=>x.char.id===curChar.id);
+      if(entry) entry.char.imgData=img;
+      renderChatsList();renderGrid();
+    }
+    e.target.value='';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══ EDIT CHARACTER ════════════════════════════════════════
+let editCharId=null;
+function openEditModal(charId){
+  const c=CHARS.find(x=>x.id===charId);
+  if(!c)return;
+  editCharId=charId;
+  document.getElementById('edit-nome').value=c.name;
+  document.getElementById('edit-desc').value=c.desc;
+  document.getElementById('edit-persona').value=c.p||'';
+  document.getElementById('edit-fala').value=c.firstMsg||'';
+  document.getElementById('edit-modal').style.display='flex';
+}
+function closeEditModal(){document.getElementById('edit-modal').style.display='none';editCharId=null;}
+function saveEdit(){
+  const c=CHARS.find(x=>x.id===editCharId);
+  if(!c){closeEditModal();return;}
+  c.name=document.getElementById('edit-nome').value.trim()||c.name;
+  c.desc=document.getElementById('edit-desc').value.trim()||c.desc;
+  c.p=document.getElementById('edit-persona').value.trim()||c.p;
+  c.firstMsg=document.getElementById('edit-fala').value.trim()||null;
+  // update in chats too
+  const entry=CHATS.find(x=>x.char.id===editCharId);
+  if(entry) entry.char={...c};
+  closeEditModal();
+  renderGrid();renderChatsList();
+  showToast('✓ Personagem atualizado!');
+}
+
+// ══ THEMES ════════════════════════════════════════════════
+const THEME_NAMES={midnight:'Midnight',abyss:'Abyss',obsidian:'Obsidian',forest:'Floresta',crimson:'Crimson',void:'Void',slate:'Slate',ember:'Ember',grape:'Grape',ocean:'Ocean',iron:'Iron',onyx:'Onyx',ivory:'Ivory',rose:'Rosa',mint:'Menta',sky:'Céu',cream:'Creme'};
+let curTheme='midnight';
+function applyTheme(el,name){
+  document.body.classList.remove('theme-'+curTheme);
+  document.body.classList.add('theme-'+name);
+  curTheme=name;
+  document.querySelectorAll('.theme-dot').forEach(d=>{
+    d.classList.toggle('on',d.dataset.theme===name);
+    if(!['ivory','rose','mint','sky','cream'].includes(d.dataset.theme)) d.style.border='3px solid '+(d.dataset.theme===name?'var(--ac)':'transparent');
+  });
+  const isDark=!['ivory','rose','mint','sky','cream'].includes(name);
+  const nameEl=document.getElementById(isDark?'theme-name-dark':'theme-name-light');
+  const otherEl=document.getElementById(isDark?'theme-name-light':'theme-name-dark');
+  if(nameEl) nameEl.textContent=THEME_NAMES[name]||name;
+  if(otherEl) otherEl.textContent=' ';
+}
+
+// ══ DESCOBRIR ═════════════════════════════════════════════
+let descFilter='all',descQuery='';
+document.getElementById('desc-cats').addEventListener('click',e=>{
+  const b=e.target.closest('.cat');if(!b)return;
+  document.querySelectorAll('#desc-cats .cat').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');descFilter=b.dataset.f;renderDesc();
+});
+function descSearch(q){descQuery=q.trim().toLowerCase();document.getElementById('desc-clear').style.display=descQuery?'block':'none';renderDesc();}
+function clearSearch(){document.getElementById('desc-input').value='';document.getElementById('desc-clear').style.display='none';descQuery='';renderDesc();}
+function renderDesc(){
+  const results=document.getElementById('desc-results');
+  const empty=document.getElementById('desc-empty');
+  const none=document.getElementById('desc-none');
+  results.innerHTML='';empty.style.display='none';none.style.display='none';
+  if(!CHARS.length){none.style.display='flex';return;}
+  const list=CHARS.filter(c=>{
+    const matchCat=descFilter==='all'||c.f.includes(descFilter);
+    const matchQ=!descQuery||c.name.toLowerCase().includes(descQuery)||c.desc.toLowerCase().includes(descQuery);
+    return matchCat&&matchQ;
+  });
+  if(!list.length){empty.style.display='flex';return;}
+  list.forEach((c,i)=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer;animation:fu .3s ease both;';
+    d.style.animationDelay=(i*.06)+'s';
+    const art=c.imgData?`<img src="${c.imgData}" style="width:56px;height:56px;border-radius:12px;object-fit:cover;flex-shrink:0;"/>`:`<div style="width:56px;height:56px;border-radius:12px;overflow:hidden;flex-shrink:0;">${svgChar(c.id,c.bg,c.fg,c.sh,c.emoji,c.name)}</div>`;
+    d.innerHTML=`${art}<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div><div style="font-size:11.5px;color:var(--txm);margin:3px 0 6px;">${c.desc}</div><div style="display:flex;flex-wrap:wrap;gap:4px;">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div><div style="color:var(--ac);font-size:20px;">›</div>`;
+    d.addEventListener('click',()=>openChat(c));
+    results.appendChild(d);
+  });
+}
+
+// ══ EMOJI PICKER ══════════════════════════════════════════
+const EMOJIS_LIST=['🌑','🐺','🌙','🔥','❄️','🌹','⚡','🌊','🦋','🐍','🌿','💀','👑','🗝️','✨','🌺','🦅','💫','🗡️','🐉','🌸','🕯️','🌌','🪐','🧊','🍄','🌠','🦁','🐱','🐦','🐠','🦊','🐻','🦌','🐝','🌻','🌴','🍀','🌵','🎭','🎪','🎨','🎵','🎸','🎹','📚','💎','🏹','⚗️','🔮','🧿','🪬','🪄','🎲','🧩','🛡️','⚔️','🪖','👁️','🫀','🧠','💔','❤️‍🔥','🖤','💜','💙','🩷'];
+let selectedEmoji='🌑';
+let pendingCharImg=null;
+
+function initEmojiPicker(){
+  const grid=document.getElementById('emoji-picker-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  EMOJIS_LIST.forEach(em=>{
+    const btn=document.createElement('button');
+    btn.style.cssText=`width:40px;height:40px;border-radius:10px;border:2px solid ${em===selectedEmoji?'var(--ac)':'var(--bd)'};background:${em===selectedEmoji?'rgba(108,99,255,.15)':'var(--s2)'};font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;`;
+    btn.textContent=em;
+    btn.onclick=()=>{selectedEmoji=em;initEmojiPicker();updateAvatarPreview();};
+    grid.appendChild(btn);
+  });
+}
+
+function updateAvatarPreview(){
+  if(pendingCharImg)return;
+  const nome=document.getElementById('char-nome')?.value||'';
+  const inner=document.getElementById('char-foto-inner');
+  if(!inner)return;
+  if(nome.trim()){
+    const initials=nome.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    inner.innerHTML=`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--s2),var(--s3));font-size:38px;font-weight:900;color:var(--ac);font-family:var(--fn);">${initials}</div>`;
+  } else {
+    inner.innerHTML=`<span style="font-size:52px;">${selectedEmoji}</span>`;
+  }
+}
+
+document.getElementById('char-nome')?.addEventListener('input',function(){if(!pendingCharImg)updateAvatarPreview();});
+initEmojiPicker();
+
+// criarPersonagem já definido acima com suporte a emoji integrado
+
+
+// ══ AUTO-SAVE (localStorage) ══════════════════════════════
+let autoSaveOn = false;
+let autoSaveInterval = null;
+
+function toggleAutoSave(){
+  autoSaveOn = !autoSaveOn;
+  const btn = document.getElementById('autosave-btn');
+  if(autoSaveOn){
+    btn.textContent = '💾';
+    btn.style.color = 'var(--green)';
+    btn.style.filter = 'drop-shadow(0 0 6px var(--green))';
+    btn.title = 'Auto-save ATIVADO — clique para desativar';
+    showToast('💾 Auto-save ativado!');
+    autoSaveNow();
+    autoSaveInterval = setInterval(autoSaveNow, 15000); // salva a cada 15s
+  } else {
+    btn.style.color = 'var(--txm)';
+    btn.style.filter = '';
+    btn.title = 'Auto-salvar conversa';
+    showToast('Auto-save desativado');
+    clearInterval(autoSaveInterval);
+    autoSaveInterval = null;
+  }
+}
+
+function autoSaveNow(){
+  if(!curChar || !hist.length) return;
+  try {
+    const key = 'soultalk_chat_' + curChar.id;
+    const data = {
+      char: curChar,
+      hist: hist,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+    // salva índice de chats salvos
+    let idx = JSON.parse(localStorage.getItem('soultalk_index') || '[]');
+    if(!idx.includes(curChar.id)) { idx.push(curChar.id); localStorage.setItem('soultalk_index', JSON.stringify(idx)); }
+    // pisca o botão para feedback visual
+    const btn = document.getElementById('autosave-btn');
+    if(btn){ btn.style.transform='scale(1.3)'; setTimeout(()=>btn.style.transform='',300); }
+  } catch(e) { showToast('Erro ao salvar: ' + e.message); }
+}
+
+function loadAutoSaved(){
+  try {
+    const idx = JSON.parse(localStorage.getItem('soultalk_index') || '[]');
+    idx.forEach(charId => {
+      const raw = localStorage.getItem('soultalk_chat_' + charId);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      if(data && data.char && data.hist && data.hist.length){
+        const existing = CHATS.findIndex(x => x.char.id === data.char.id);
+        const entry = {char: data.char, lastMsg: data.hist[data.hist.length-1]?.content || '', lastTime: new Date(data.savedAt), hist: data.hist};
+        if(existing >= 0) CHATS[existing] = entry;
+        else CHATS.push(entry);
+        // restaura personagem no array
+        if(!CHARS.find(c => c.id === data.char.id)) CHARS.push(data.char);
+      }
+    });
+    if(idx.length){ renderChatsList(); renderGrid(); }
+  } catch(e) {}
+}
+
+function exportChat(){
+  if(!curChar || !hist.length){ showToast('Nenhuma mensagem para exportar!'); return; }
+  const lines = hist.map(m => {
+    const who = m.role === 'user' ? 'Você' : curChar.name;
+    const txt = m.content.replace(/\[CHIPS\][\s\S]*?\[\/CHIPS\]/gi,'').trim();
+    return who + ':\n' + txt;
+  }).join('\n\n---\n\n');
+  const header = `SoulTalk — ${curChar.name}\nExportado em: ${new Date().toLocaleString('pt-BR')}\n\n${'='.repeat(40)}\n\n`;
+  const blob = new Blob([header + lines], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `SoulTalk_${curChar.name.replace(/\s+/g,'_')}.txt`;
+  a.click();
+  showToast('📄 Conversa exportada!');
+}
+
+// Carrega chats salvos ao iniciar
+window.addEventListener('load', () => { loadAutoSaved(); });
+
+// Auto-save ao sair da página se ativo
+window.addEventListener('beforeunload', () => { if(autoSaveOn) autoSaveNow(); });
+
+// Set Gemini as selected in config UI on load
+document.addEventListener('DOMContentLoaded',()=>{
+  selectProvider('gemini');
+  const geminiKey=document.getElementById('gemini-key');
+  if(geminiKey) geminiKey.value=GEMINI_KEY;
+  renderGrid();
+});
+</script>
+</body>
+</html>
